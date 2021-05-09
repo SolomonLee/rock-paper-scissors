@@ -6,7 +6,10 @@
     },
     "extends": [
         "plugin:react/recommended",
-        "airbnb"
+        "airbnb",
+        "prettier",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -16,26 +19,30 @@
         "ecmaVersion": 12,
         "sourceType": "module"
     },
-    "plugins": [
-        "react",
-        "@typescript-eslint"
-    ],
+    "plugins": ["react", "jest", "@typescript-eslint"],
     "rules": {
-        "react/jsx-filename-extension": [ "warn", {"extensions": [".tsx"]} ],
+        "react/jsx-filename-extension": ["warn", { "extensions": [".tsx"] }],
         "import/extensions": [
             "error",
             "ignorePackages",
-                {
+            {
                 "ts": "never",
                 "tsx": "never"
-                }
-            ],
+            }
+        ],
         "no-use-before-define": "off",
-        "@typescript-eslint/no-use-before-define": ["error"]
+        "@typescript-eslint/no-use-before-define": ["error"],
+        "import/prefer-default-export": "off",
+        "jest/no-disabled-tests": "warn",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/prefer-to-have-length": "warn",
+        "jest/valid-expect": "error",
+        "no-console": "off"
     },
     "settings": {
         "import/resolver": {
-        "typescript": {}
+            "typescript": {}
         }
     }
 }
