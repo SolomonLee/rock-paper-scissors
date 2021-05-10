@@ -7,7 +7,11 @@ interface Props {
     type: string;
 }
 
-export const LoadingItem = ({ loading, content, type }: Props) => {
+export const LoadingItem = ({
+    loading,
+    content,
+    type,
+}: Props): JSX.Element | null => {
     if (loading === false) return null;
 
     return (

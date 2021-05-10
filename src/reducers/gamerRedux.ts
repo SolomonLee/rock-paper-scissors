@@ -3,6 +3,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import * as apiAuth from "../apis/auth";
 import * as apiGamer from "../apis/gamer";
 import { resultError, resultOk } from "../apis/result";
+import { RootState } from "./store";
 
 // const dispatch = useDispatch();
 
@@ -33,16 +34,10 @@ export const signInAsync = createAsyncThunk(
         if (resultSignIn.result) {
             const resultGetGamerInfo = await apiGamer.getGamerInfo();
 
-            if (resultGetGamerInfo.result) {
-                return resultGetGamerInfo;
-            }
-
-            console.log("signInAsync resultGetGamerInfo:", resultGetGamerInfo);
-            return resultError("取得玩家訊息失敗");
+            return resultGetGamerInfo;
         }
 
-        console.log("signInAsync resultError !");
-        return resultError("登入失敗");
+        return resultError("登入失敗", <apiGamer.Gamer>{});
     }
 );
 
@@ -51,13 +46,13 @@ export const registerAsync = createAsyncThunk(
     async ({ email, password }: User) => {
         try {
             await apiAuth.register(email, password);
-            return resultOk({
+            return resultOk(<apiGamer.Gamer>{
                 email,
                 gamerName: email.slice(0, email.indexOf("@")),
                 joinGameRoomId: "",
             });
         } catch (error) {
-            return resultError("註冊失敗");
+            return resultError("註冊失敗", <apiGamer.Gamer>{});
         }
     }
 );
@@ -69,14 +64,16 @@ export const getGamerInfoAsync = createAsyncThunk(
         const resultGetGamerInfo = await apiGamer.getGamerInfo();
 
         if (resultGetGamerInfo.result) {
+            return resultGetGamerInfo;
             console.log(
                 "getGamerInfoAsync resultGetGamerInfo",
                 resultGetGamerInfo
             );
             return resultGetGamerInfo;
         }
-        if (setErrorMsg) return resultError("取得玩家資訊失敗");
-        return resultError("");
+        if (setErrorMsg)
+            return resultError("取得玩家資訊失敗", <apiGamer.Gamer>{});
+        return resultError("", <apiGamer.Gamer>{});
     }
 );
 
@@ -202,13 +199,14 @@ export const gamerSlice = createSlice({
 
 export const { signOut } = gamerSlice.actions;
 
-export const selectGamerEmail = (state: any): string => state.gamer.email;
-export const selectGamerName = (state: any): string => state.gamer.gamerName;
-export const selectGamerJoinGameRoomId = (state: any): string =>
+export const selectGamerEmail = (state: RootState): string => state.gamer.email;
+export const selectGamerName = (state: RootState): string =>
+    state.gamer.gamerName;
+export const selectGamerJoinGameRoomId = (state: RootState): string =>
     state.gamer.joinGameRoomId;
-export const selectGamerInSignIn = (state: any): boolean =>
+export const selectGamerInSignIn = (state: RootState): boolean =>
     state.gamer.inSignIn;
-export const selectGamerSignInErrorMsg = (state: any): string =>
+export const selectGamerSignInErrorMsg = (state: RootState): string =>
     state.gamer.signInErrorMsg;
 
 // apiAuth.addAuthStateChangedCallBack("autoGetGamerInfo", (user) => {

@@ -2,15 +2,18 @@ import firebase from "firebase/app";
 import { resultError, resultOk, Result } from "./result";
 import "firebase/auth";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface AuthResult {}
+
 export const register = async (
     email: string,
     password: string
-): Promise<Result> => {
+): Promise<Result<AuthResult>> => {
     console.log(`register email:${email}, password:${password}`);
     try {
         await firebase.auth().createUserWithEmailAndPassword(email, password);
 
-        return resultOk();
+        return resultOk({});
     } catch (e) {
         console.log(`register error!! ${e}`);
     }
@@ -21,7 +24,7 @@ export const register = async (
 export const signIn = async (
     email: string,
     password: string
-): Promise<Result> => {
+): Promise<Result<AuthResult>> => {
     console.log(`signIn email:${email}, password:${password}`);
     try {
         const result = await firebase
@@ -35,7 +38,7 @@ export const signIn = async (
     return resultError("登入失敗");
 };
 
-export const signOut = async (): Promise<Result> => {
+export const signOut = async (): Promise<Result<AuthResult>> => {
     try {
         await firebase.auth().signOut();
 

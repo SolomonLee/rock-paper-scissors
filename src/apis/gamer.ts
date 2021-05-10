@@ -8,8 +8,7 @@ export interface Gamer {
     joinGameRoomId: string;
 }
 
-export const getGamerInfo = async (): Promise<Result> => {
-    const gamer = <Gamer>{};
+export const getGamerInfo = async (): Promise<Result<Gamer>> => {
     try {
         console.log("getGamerInfo #1");
         // eslint-disable-next-line no-shadow
@@ -26,5 +25,5 @@ export const getGamerInfo = async (): Promise<Result> => {
         console.log("載入玩家資料發生錯誤 ", e);
     }
 
-    return resultError("載入玩家資料發生錯誤", gamer);
+    return resultError("載入玩家資料發生錯誤", <Gamer>{});
 };

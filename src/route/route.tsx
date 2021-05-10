@@ -5,6 +5,7 @@ import { Route } from "react-router-dom";
 
 interface RouteType {
     path: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     component: React.LazyExoticComponent<React.ComponentType<any>>;
     routes:
         | {

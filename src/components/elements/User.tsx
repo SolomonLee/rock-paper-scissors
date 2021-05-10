@@ -1,4 +1,4 @@
-import React, { MouseEvent, useEffect, useLayoutEffect, useState } from "react";
+import React, { MouseEvent, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
     signOut,
@@ -20,8 +20,6 @@ const User = (): JSX.Element => {
     const signInErrorMsg = useSelector(selectGamerSignInErrorMsg);
 
     const dispatch = useDispatch();
-
-    // errorMsg={errorMsg}
 
     const [isOpenSing, setIsOpenSing] = useState(false);
     useEffect(() => {
