@@ -11,6 +11,8 @@
 # production
 /build
 /src/apis/keys
+firebaseConfig.ts
+src/firebaseConfig.ts
 
 # misc
 .DS_Store
