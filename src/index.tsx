@@ -1,13 +1,31 @@
 import React from "react";
+import { BrowserRouter as Router } from "react-router-dom";
 import ReactDOM from "react-dom";
-import "./index.css";
+import { Provider } from "react-redux";
+import "./css/main.scss";
+import firebase from "firebase/app";
+
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
+import "firebase/analytics";
+
+import store from "./reducers/store";
+import firebaseConfig from "./firebaseConfig";
+
+console.log("init");
+firebase.initializeApp(firebaseConfig);
+firebase.analytics();
+
 ReactDOM.render(
-    <React.StrictMode>
-        <App />
-    </React.StrictMode>,
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <Provider store={store}>
+        <React.StrictMode>
+            <Router>
+                <App />
+            </Router>
+        </React.StrictMode>
+    </Provider>,
     document.getElementById("root")
 );
 

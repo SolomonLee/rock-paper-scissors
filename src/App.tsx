@@ -1,24 +1,41 @@
-import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import React, { Suspense } from "react";
+import { Switch } from "react-router-dom";
+// import logo from "./logo.svg";
+// import "./App.css";
+import ModalBox from "./components/combo/modal/ModalBox";
+import RootHeader from "./components/elements/RootHeader";
+import RootBody from "./components/elements/RootBody";
+import RootFooter from "./components/elements/RootFooter";
+import Header from "./components/elements/Header";
 
+import { routes, RouteWithSubRoutes } from "./route/route";
+import Loading from "./components/elements/Loading";
+
+console.log(`#1 INDEX`);
 function App(): JSX.Element {
     return (
         <div className="App">
-            <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo" />
-                <p>
-                    Edit <code>src/App.tsx</code> and save to reload.
-                </p>
-                <a
-                    className="App-link"
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
+            <ModalBox />
+            <RootHeader>
+                <Header />
+            </RootHeader>
+            <RootBody>
+                <Suspense
+                    fallback={<Loading loading content="loading" type="" />}
                 >
-                    Learn React
-                </a>
-            </header>
+                    <Switch>
+                        {routes.map((route) => (
+                            <RouteWithSubRoutes
+                                key={route.path}
+                                path={route.path}
+                                routes={route.routes}
+                                component={route.component}
+                            />
+                        ))}
+                    </Switch>
+                </Suspense>
+            </RootBody>
+            <RootFooter>2021 by Solomon</RootFooter>
         </div>
     );
 }

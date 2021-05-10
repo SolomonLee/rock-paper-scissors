@@ -38,7 +38,14 @@
         "jest/no-identical-title": "error",
         "jest/prefer-to-have-length": "warn",
         "jest/valid-expect": "error",
-        "no-console": "off"
+        "no-console": "off",
+        "no-param-reassign": [
+            "error",
+            {
+                "props": true,
+                "ignorePropertyModificationsFor": ["state"]
+            }
+        ]
     },
     "settings": {
         "import/resolver": {

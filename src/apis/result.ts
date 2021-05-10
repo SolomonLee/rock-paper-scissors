@@ -1,5 +1,5 @@
 export interface Result {
-    datas: unknown;
+    datas: any;
     result: boolean;
     resultMsg: string;
 }
