@@ -1,0 +1,24 @@
+// import { useEffect, useRef } from "react";
+
+// export const useAutoUpdate = (
+//     mapKey: string,
+//     /** When AuthStateChanged callback function */
+//     cb: (user: firebase.User | null) => void
+// ): void => {
+//     const refIsMount = useRef(false);
+
+//     useEffect(() => {
+//         refIsMount.current = true;
+//         console.log(
+//             `addAuthStateChangedCallBack mapKey:${mapKey} ,cbName: ${cb.name}`
+//         );
+//         apiAuth.addAuthStateChangedCallBack(mapKey, (user) => {
+//             if (user) cb(user);
+//             else cb(null);
+//         });
+
+//         return () => {
+//             refIsMount.current = false;
+//         };
+//     }, []);
+// };

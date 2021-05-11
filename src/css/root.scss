@@ -49,3 +49,30 @@ img {
     height: 100%;
     object-fit: contain;
 }
+
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #eee;
+    width: 15px;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #999;
+    border-radius: 8px;
+    border: 2px solid #999;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    border-color: #333;
+}

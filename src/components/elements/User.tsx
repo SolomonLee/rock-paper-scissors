@@ -12,6 +12,7 @@ import {
 } from "../../reducers/gamerRedux";
 import Modal from "../combo/modal/Modal";
 import SignInForm from "../combo/form/signIn/SignInForm";
+import { useAuthStateChanged } from "../../hooks/authHook";
 
 const User = (): JSX.Element => {
     const gamerEmail = useSelector(selectGamerEmail);
@@ -22,11 +23,14 @@ const User = (): JSX.Element => {
     const dispatch = useDispatch();
 
     const [isOpenSing, setIsOpenSing] = useState(false);
-    useEffect(() => {
-        setTimeout(() => {
-            dispatch(getGamerInfoAsync(false));
-        }, 500);
-    }, []);
+    useAuthStateChanged("autoGetGamerInfo", (user) => {
+        console.log(
+            "when AuthStateChange autoGetGamerInfo RUN!",
+            "user:",
+            user
+        );
+        if (user) dispatch(getGamerInfoAsync(false));
+    });
 
     useEffect(() => {
         console.log(`gamerEmail: ${gamerEmail}`);
@@ -59,41 +63,49 @@ const User = (): JSX.Element => {
         setIsOpenSing(false);
     };
 
-    return (
-        <div className="user">
-            {inSignIn ? (
-                <span>
-                    <span className="material-icons icons-loading" />
-                    確認中...
-                </span>
-            ) : null}
-            {gamerEmail?.length ? (
-                <>
-                    <div className="info">
-                        <span className="email">{gamerEmail}</span>
-                        <span className="name">Hi! {gamerName}</span>
-                    </div>
-                    <div className="functions">
-                        <button
-                            type="button"
-                            className="btn btn_style1"
-                            onClick={handleSignOut}
-                        >
-                            sign out
-                        </button>
-                    </div>
-                </>
-            ) : (
+    let showJSX = null;
+    if (inSignIn) {
+        showJSX = (
+            <span>
+                <span className="material-icons icons-loading" />
+                確認中...
+            </span>
+        );
+    } else if (gamerEmail?.length) {
+        showJSX = (
+            <>
+                <div className="info">
+                    <span className="email">{gamerEmail}</span>
+                    <span className="name">Hi! {gamerName}</span>
+                </div>
                 <div className="functions">
                     <button
                         type="button"
                         className="btn btn_style1"
-                        onClick={handleShowSignInModal}
+                        onClick={handleSignOut}
                     >
-                        sign in
+                        sign out
                     </button>
                 </div>
-            )}
+            </>
+        );
+    } else {
+        showJSX = (
+            <div className="functions">
+                <button
+                    type="button"
+                    className="btn btn_style1"
+                    onClick={handleShowSignInModal}
+                >
+                    sign in
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="user">
+            {showJSX}
             <Modal
                 isOpen={isOpenSing}
                 stylenum={0}

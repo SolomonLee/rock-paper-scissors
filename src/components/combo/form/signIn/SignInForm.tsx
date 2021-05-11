@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import FillItem from "../../../elements/FillItem";
+import { FillHandle } from "../../fillitem/FillInterface";
+import FillItem from "../../fillitem/FillItem";
 import Split from "../../../elements/Split";
 
 const SignupSchema = Yup.object().shape({
@@ -32,10 +33,22 @@ const SignInForm = ({
 }: Props): JSX.Element => {
     // const refOnSended = useRef(false);
     const [formAction, setFormAction] = useState(formActionList.singIn);
+    const refEmail = useRef<FillHandle>(null);
+    const refPassword = useRef<FillHandle>(null);
 
     useEffect(() => {
         setFormAction(formActionList.singIn);
     }, []);
+
+    useEffect(() => {
+        if (isWaitingResult) {
+            refEmail.current?.disabled();
+            refPassword.current?.disabled();
+        } else {
+            refEmail.current?.undisabled();
+            refPassword.current?.undisabled();
+        }
+    }, [isWaitingResult]);
 
     const handleChangeFormAction = () => {
         if (formAction === formActionList.singIn) {
@@ -81,6 +94,7 @@ const SignInForm = ({
                 <div className="row">
                     <div className="col-12">
                         <FillItem
+                            ref={refEmail}
                             name="email"
                             title="名稱"
                             type="text"
@@ -99,6 +113,7 @@ const SignInForm = ({
                 <div className="row">
                     <div className="col-12">
                         <FillItem
+                            ref={refPassword}
                             name="password"
                             title="密碼"
                             type="password"
@@ -153,7 +168,7 @@ const SignInForm = ({
                     <>
                         <Split content={<small>系統訊息</small>} />
                         <div className="alert alert-danger" role="alert">
-                            失敗, 請確認 信箱 或 密碼
+                            {errorMsg}
                         </div>
                     </>
                 ) : null}

@@ -54,15 +54,12 @@ console.log(`#1 AUTH`);
 type AuthCallBack = (user: firebase.User | null) => void;
 const mapCallBack = new Map<string, AuthCallBack>();
 setTimeout(() => {
-    console.log(`#2 AUTH`);
-
     firebase.auth().onAuthStateChanged((user) => {
-        console.log("firebase.auth onAuthStateChanged");
         mapCallBack.forEach((cb) => {
             cb(user);
         });
     });
-}, 2000);
+});
 
 export const addAuthStateChangedCallBack = (
     key: string,

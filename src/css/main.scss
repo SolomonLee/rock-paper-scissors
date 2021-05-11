@@ -95,6 +95,37 @@
     }
 }
 
+.game_list_box {
+    & > .box_title {
+        border-bottom: 1px solid #ccc;
+    }
+
+    & > .box_content {
+        .add_game_room {
+            padding-top: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #ccc;
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        .list_filter {
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+        }
+    }
+
+    ul {
+        padding: 0;
+        list-style: none;
+        max-height: calc(100vh - 420px);
+        overflow: auto;
+    }
+} // game_list_box
+
 .form_box {
     & > .box_content {
         padding: 5px 0 20px;
@@ -106,7 +137,7 @@
             margin-bottom: var(--margin-bottom);
         }
     }
-}
+} // form_box
 // ===== BOX : END =====
 
 // ===== ITEM : START =====
@@ -122,6 +153,91 @@
         letter-spacing: 2px;
     }
 }
+
+.room_list_item {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 14px 8px 14px 14px;
+
+    & > .item_title {
+        display: flex;
+        justify-content: space-between;
+
+        .info {
+            max-width: calc(100% - 60px);
+        }
+        .name {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 100%;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .roomState {
+            font-size: 0.6rem;
+            text-align: left;
+
+            &::before {
+                content: "";
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                background: #000;
+                border-radius: 30px;
+                line-height: inherit;
+                margin-right: 6px;
+            }
+
+            &[data-state="Waiting"]::before {
+                background: #1ee81b;
+            }
+
+            &[data-state="Start"]::before {
+                background: #ecde34;
+            }
+
+            &[data-state="End"]::before {
+                background: #ef1717;
+            }
+        }
+
+        .function {
+            min-width: 60px;
+
+            .btn {
+                height: 100%;
+            }
+        }
+    }
+
+    & > .item_content {
+        border-top: 1px solid #ccc;
+        margin-top: 10px;
+        padding-top: 12px;
+        text-align: left;
+        display: none;
+
+        .info {
+            margin-bottom: 0.4rem;
+        }
+    }
+
+    & > .item_bottom {
+        display: none;
+    }
+
+    &[data-open] {
+        & > .item_content {
+            display: block;
+        }
+
+        & > .item_bottom {
+            display: block;
+        }
+    }
+} // room_list_item
 
 .loading_item {
     width: 100%;
@@ -413,6 +529,17 @@
         white-space: nowrap;
         user-select: none;
         -webkit-user-select: none;
+        text-align: left;
+    }
+
+    select,
+    select:active,
+    select:focus,
+    select:focus-within,
+    select:hover {
+        border: none;
+        box-shadow: none;
+        padding: 0 0 0 8px;
     }
 } // fill_item
 

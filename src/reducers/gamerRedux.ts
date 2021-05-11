@@ -1,11 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-// import { useDispatch } from "react-redux";
 import * as apiAuth from "../apis/auth";
 import * as apiGamer from "../apis/gamer";
+import * as apiGameRooms from "../apis/gameRooms";
 import { resultError, resultOk } from "../apis/result";
 import { RootState } from "./store";
-
-// const dispatch = useDispatch();
 
 interface GamerState extends apiGamer.Gamer {
     inSignIn: boolean;
@@ -74,6 +72,50 @@ export const getGamerInfoAsync = createAsyncThunk(
         if (setErrorMsg)
             return resultError("取得玩家資訊失敗", <apiGamer.Gamer>{});
         return resultError("", <apiGamer.Gamer>{});
+    }
+);
+
+export const joinGameRoomAsync = createAsyncThunk(
+    "gamerRedux/joinGameRoomAsync",
+    async (gameRoomId: string, { getState }) => {
+        const { email, joinGameRoomId } = getState() as GamerState;
+
+        if (email === "") {
+            return resultError("需要登入才能加入房間!!", false);
+        }
+
+        if (joinGameRoomId.length !== 0) {
+            return resultError("不行同時加入兩間房間!!", false);
+        }
+
+        if (gameRoomId.length !== 0) {
+            return resultError("請確認房間ID!!", false);
+        }
+
+        const reulst = await apiGameRooms.joinGameRoom(gameRoomId);
+        return reulst;
+    }
+);
+
+export const leaveGameRoomAsync = createAsyncThunk(
+    "gamerRedux/leaveGameRoomAsync",
+    async (gameRoomId: string, { getState }) => {
+        const { email, joinGameRoomId } = getState() as GamerState;
+
+        if (email === "") {
+            return resultError("需要登入才能離開房間!!", false);
+        }
+
+        if (joinGameRoomId.length === 0) {
+            return resultError("尚未加入房間!!", false);
+        }
+
+        if (gameRoomId !== joinGameRoomId) {
+            return resultError("請確認房間ID!!", false);
+        }
+
+        const reulst = await apiGameRooms.leaveGameRoom(gameRoomId);
+        return reulst;
     }
 );
 
@@ -208,10 +250,5 @@ export const selectGamerInSignIn = (state: RootState): boolean =>
     state.gamer.inSignIn;
 export const selectGamerSignInErrorMsg = (state: RootState): string =>
     state.gamer.signInErrorMsg;
-
-// apiAuth.addAuthStateChangedCallBack("autoGetGamerInfo", (user) => {
-//     console.log(`autoGetGamerInfo : user: ${user}`);
-//     if (user) dispatch(getGamerInfoAsync);
-// });
 
 export default gamerSlice.reducer;
