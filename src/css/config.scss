@@ -9,3 +9,51 @@ $fontColor2: #fff;
 $radius1: 8px;
 $radius2: 14px;
 $radius3: 30px;
+
+@mixin w-xl {
+    @media (min-width: 1200px) {
+        @content;
+    }
+}
+
+@mixin w-lg-xl {
+    @media (min-width: 992px) and (max-width: 1199.999px) {
+        @content;
+    }
+}
+
+@mixin w-lg {
+    @media (min-width: 992px) {
+        @content;
+    }
+}
+
+@mixin w-md-lg {
+    @media (min-width: 768px) and (max-width: 991.999px) {
+        @content;
+    }
+}
+
+@mixin w-md {
+    @media (min-width: 768px) {
+        @content;
+    }
+}
+
+@mixin w-sm-md {
+    @media (min-width: 576px) and (max-width: 768.999px) {
+        @content;
+    }
+}
+
+@mixin w-sm {
+    @media (min-width: 576px) {
+        @content;
+    }
+}
+
+@mixin w-xs {
+    @media (max-width: 575px) {
+        @content;
+    }
+}

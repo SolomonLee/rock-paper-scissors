@@ -1,16 +1,20 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import * as apiGameRooms from "../apis/gameRooms";
+import { RoomGamerChoose } from "../apis/gameRooms";
 import * as apiGemeConditions from "../apis/gemeConditions";
 import { resultError, resultOk } from "../apis/result";
 import { RootState } from "./store";
+import addMessage from "../components/combo/message/Message";
 
 const initialState = {
     onInsertGameRoom: false,
     onUpdateData: false,
+    onReadyOrStart: false,
     gameRooms: <apiGameRooms.GameRoom[]>[],
     resultGameRooms: <apiGameRooms.GameRoom[]>[],
     gameConditions: <apiGemeConditions.GameCondition[]>[],
     gameCondition: "",
+    lastCreateGameRoomId: "",
 };
 
 const filterGameRoom = (
@@ -19,7 +23,9 @@ const filterGameRoom = (
 ): apiGameRooms.GameRoom[] =>
     gameRooms.filter(
         (gameRoom) =>
-            gameRoom.gameConditionKey === gameCondition || gameCondition === ""
+            (gameRoom.gameConditionKey === gameCondition ||
+                gameCondition === "") &&
+            gameRoom.state === "Waiting"
     );
 
 export const insertGameRoomAsync = createAsyncThunk(
@@ -49,17 +55,45 @@ export const updateDataAsync = createAsyncThunk(
                     resultGameConditions: resultGameConditions.datas,
                 })
             );
-            console.log("test updateDataAsync #2", result);
             return result;
         } catch (error) {
             console.log("更新資料發生錯誤", error);
         }
 
-        console.log("test updateDataAsync #1");
         return resultError("更新資料發生錯誤", {
             resultGameRooms: <apiGameRooms.GameRoom[]>[],
             resultGameConditions: <apiGemeConditions.GameCondition[]>[],
         });
+    }
+);
+
+export const gameStartAsync = createAsyncThunk(
+    "roomsInfoRedux/gameStartAsync",
+    async (roomId: string) => {
+        try {
+            const result = await apiGameRooms.gameStart(roomId);
+
+            return result;
+        } catch (error) {
+            console.log("gameStartAsync Catch Error", error);
+        }
+
+        return resultError("遊戲開始時 發生錯誤", false);
+    }
+);
+
+export const gameReadyAsync = createAsyncThunk(
+    "roomsInfoRedux/gameReadyAsync",
+    async ({ roomId, choose }: RoomGamerChoose) => {
+        try {
+            const result = await apiGameRooms.gameReady(roomId, choose);
+
+            return result;
+        } catch (error) {
+            console.log("gameReadyAsync Catch Error", error);
+        }
+
+        return resultError("遊戲準備時 發生錯誤", false);
     }
 );
 
@@ -68,7 +102,6 @@ export const roomsInfoSlice = createSlice({
     initialState,
     reducers: {
         filter: (state, action) => {
-            console.log("filter");
             state.gameCondition = action.payload;
 
             state.resultGameRooms = filterGameRoom(
@@ -76,24 +109,20 @@ export const roomsInfoSlice = createSlice({
                 state.gameRooms
             );
         },
+        clearLastRoomId: (state) => {
+            state.lastCreateGameRoomId = "";
+        },
     },
     extraReducers: (builder) => {
-        // updateDataAsync : START
+        // insertGameRoomAsync : START
         builder.addCase(insertGameRoomAsync.pending, (state) => {
             state.onInsertGameRoom = true;
         });
         builder.addCase(insertGameRoomAsync.fulfilled, (state, action) => {
             state.onInsertGameRoom = false;
 
-            console.log("insertGameRoomAsync #1", action.payload);
             if (action.payload.result) {
-                console.log("insertGameRoomAsync #2", action.payload.datas);
-
-                // const gameRooms = [...state.gameRooms];
-                // gameRooms.push(action.payload.datas);
-                // state.gameRooms = gameRooms;
                 state.gameRooms.unshift(action.payload.datas);
-                // state.gameRooms = gameRooms;
                 if (
                     action.payload.datas.gameConditionKey ===
                         state.gameCondition ||
@@ -104,14 +133,15 @@ export const roomsInfoSlice = createSlice({
                     // state.resultGameRooms = resultGameRooms;
                     state.resultGameRooms.unshift(action.payload.datas);
                 }
+                addMessage(`新增房間成功!`, "Ok");
             }
-            console.log("insertGameRoomAsync #3");
+            state.lastCreateGameRoomId = action.payload.datas.roomId;
         });
         builder.addCase(insertGameRoomAsync.rejected, (state) => {
             state.onInsertGameRoom = false;
+            addMessage("新增房間時 發生意料外的事情!", "Fail");
         });
-
-        // updateDataAsync : END
+        // insertGameRoomAsync : END
 
         // updateDataAsync : START
         builder.addCase(updateDataAsync.pending, (state) => {
@@ -119,16 +149,9 @@ export const roomsInfoSlice = createSlice({
         });
         builder.addCase(updateDataAsync.fulfilled, (state, action) => {
             state.onUpdateData = false;
-            console.log("test updateDataAsync #3");
             if (action.payload.result) {
                 const { resultGameConditions } = action.payload.datas;
                 const { resultGameRooms } = action.payload.datas;
-                console.log("test updateDataAsync #4", resultGameConditions);
-                console.log("test updateDataAsync #5", resultGameRooms);
-                console.log(
-                    "test updateDataAsync #6",
-                    filterGameRoom(state.gameCondition, resultGameRooms)
-                );
 
                 state.gameRooms = resultGameRooms;
                 state.gameConditions = resultGameConditions;
@@ -136,21 +159,48 @@ export const roomsInfoSlice = createSlice({
                     state.gameCondition,
                     resultGameRooms
                 );
+                addMessage("成功更新房間資訊!", "Ok");
             }
         });
         builder.addCase(updateDataAsync.rejected, (state) => {
             state.onUpdateData = false;
         });
         // updateDataAsync : END
+
+        // gameStartAsync : START
+        builder.addCase(gameStartAsync.pending, (state) => {
+            state.onReadyOrStart = true;
+        });
+        builder.addCase(gameStartAsync.fulfilled, (state) => {
+            state.onReadyOrStart = false;
+        });
+        builder.addCase(gameStartAsync.rejected, (state) => {
+            state.onReadyOrStart = false;
+        });
+        // gameStartAsync : END
+
+        // gameReadyAsync : START
+        builder.addCase(gameReadyAsync.pending, (state) => {
+            state.onReadyOrStart = true;
+        });
+        builder.addCase(gameReadyAsync.fulfilled, (state) => {
+            state.onReadyOrStart = false;
+        });
+        builder.addCase(gameReadyAsync.rejected, (state) => {
+            state.onReadyOrStart = false;
+        });
+        // gameReadyAsync : END
     },
 });
 
-export const { filter } = roomsInfoSlice.actions;
+export const { filter, clearLastRoomId } = roomsInfoSlice.actions;
 
 export const selectOnInsertGameRoom = (state: RootState): boolean =>
     state.roomsInfo.onInsertGameRoom;
 export const selectOnUpdateData = (state: RootState): boolean =>
     state.roomsInfo.onUpdateData;
+export const selectOnReadyOrStart = (state: RootState): boolean =>
+    state.roomsInfo.onReadyOrStart;
 export const selectGameRooms = (state: RootState): apiGameRooms.GameRoom[] =>
     state.roomsInfo.resultGameRooms;
 export const selectGameConditions = (
@@ -158,5 +208,7 @@ export const selectGameConditions = (
 ): apiGemeConditions.GameCondition[] => state.roomsInfo.gameConditions;
 export const selectGameCondition = (state: RootState): string =>
     state.roomsInfo.gameCondition;
+export const selectLastCreateGameRoomId = (state: RootState): string =>
+    state.roomsInfo.lastCreateGameRoomId;
 
 export default roomsInfoSlice.reducer;

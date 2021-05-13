@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { InsertGameRoomInfo } from "../../../apis/gameRooms";
+import { joinGameRoomAsync } from "../../../reducers/gamerRedux";
 import {
+    selectLastCreateGameRoomId,
     selectOnInsertGameRoom,
     selectGameConditions,
     insertGameRoomAsync,
+    clearLastRoomId,
 } from "../../../reducers/roomsInfoRedux";
 import AddGameRoomForm from "../form/gameRoom/AddGameRoomForm";
 import Modal from "../modal/Modal";
@@ -16,6 +19,7 @@ const AddGameRoomItem = (): JSX.Element | null => {
     const [isOpen, setIsOpen] = useState(false);
     const onInsertGameRoom = useSelector(selectOnInsertGameRoom);
     const gameConditions = useSelector(selectGameConditions);
+    const lastCreateGameRoomId = useSelector(selectLastCreateGameRoomId);
 
     const dispatch = useDispatch();
 
@@ -32,15 +36,20 @@ const AddGameRoomItem = (): JSX.Element | null => {
     };
 
     useEffect(() => {
-        console.log("test", onInsertGameRoom);
         if (onInsertGameRoom) handleShowModal();
-        else handleCloseModal();
+        else {
+            handleCloseModal();
+            if (lastCreateGameRoomId !== "") {
+                dispatch(joinGameRoomAsync(lastCreateGameRoomId));
+                dispatch(clearLastRoomId());
+            }
+        }
     }, [onInsertGameRoom]);
 
     if (gameConditions.length === 0) return null;
 
     return (
-        <div className="add_game_room">
+        <>
             <button
                 type="button"
                 className="btn btn_style1"
@@ -56,7 +65,7 @@ const AddGameRoomItem = (): JSX.Element | null => {
                     errorMsg={errorMsg}
                 />
             </Modal>
-        </div>
+        </>
     );
 };
 

@@ -10,11 +10,12 @@ import Header from "./components/elements/Header";
 
 import { routes, RouteWithSubRoutes } from "./route/route";
 import Loading from "./components/elements/Loading";
+import MessageBox from "./components/combo/message/MessageBox";
 
-console.log(`#1 INDEX`);
 function App(): JSX.Element {
     return (
         <div className="App">
+            <MessageBox />
             <ModalBox />
             <RootHeader>
                 <Header />

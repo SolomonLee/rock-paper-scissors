@@ -2,28 +2,33 @@ import firebase from "firebase/app";
 import { resultError, resultOk, Result } from "./result";
 import "firebase/functions";
 
-interface RoomGamerState {
+export const roomStateMap = {
+    Waiting: "Waiting",
+    Start: "Start",
+    End: "End",
+};
+
+export const gamerResultMap = {
+    Gaming: "gaming",
+    Winner: "winner",
+    Loser: "loser",
+};
+
+export const gameConditionMap = {
+    /** 4gxgWJvbrUA55j5B7SzK : 依照獲勝場數, 選出最終獲得勝利的玩家  */
+    cA: "4gxgWJvbrUA55j5B7SzK",
+    /** GnQBE5XJjS7g6NOp5ytn : 希望最終剩下多少最終優勝者  */
+    cB: "GnQBE5XJjS7g6NOp5ytn",
+};
+
+export interface RoomGamer {
     name: string;
-    prevChoose: string;
     ready: boolean;
+    /** gaming|winner|loser */
     result: string;
+    prevChoose: string;
+    score: number;
 }
-
-interface RoomGamers {
-    [email: string]: RoomGamerState;
-}
-
-interface RoomState {
-    gamers: RoomGamers;
-    /** Waiting|Start|End */
-    state: string;
-    roomMaster: string;
-}
-
-// interface RoomChoose {
-/** 存放玩家 Email : 剪刀 石頭 布 */
-//     [email: string]: string;
-// }
 
 export interface InsertGameRoomInfo {
     gameConditionKey: string;
@@ -39,22 +44,39 @@ export interface GameRoom extends InsertGameRoomInfo {
     /** Waiting|Start|End */
     winners: string[];
     timestamp: number;
-    roomState: RoomState;
     creator: string;
+
+    gamers: RoomGamer[];
+    /** Waiting|Start|End */
+    state: string;
+    roomMaster: string;
+}
+
+export interface GameRoomSnapshot extends InsertGameRoomInfo {
+    /** Waiting|Start|End */
+    winners: string[];
+    timestamp: number;
+    creator: string;
+
+    /** Waiting|Start|End */
+    state: string;
+    roomMaster: string;
+}
+
+export interface RoomGamerChoose {
+    roomId: string;
+    choose: string;
 }
 
 export const getGameRooms = async (): Promise<Result<Array<GameRoom>>> => {
     try {
-        console.log("getGameRooms #1");
         // eslint-disable-next-line no-shadow
         const getResult = await firebase
             .functions()
             .httpsCallable("getGameRooms")();
-        console.log("getGameRooms #2");
 
         if (!getResult.data?.result) throw new Error(getResult.data);
 
-        console.log("getGameRooms #3", getResult.data);
         return resultOk(<GameRoom[]>getResult.data.datas);
     } catch (e) {
         console.log("載入房間發生錯誤 ", e);
@@ -67,22 +89,18 @@ export const insertGameRoom = async (
     gameRoomInfo: InsertGameRoomInfo
 ): Promise<Result<GameRoom>> => {
     try {
-        console.log("insertGameRoom #1");
         // eslint-disable-next-line no-shadow
         const insertResult = await firebase
             .functions()
             .httpsCallable("insertGameRoom")({
             ...gameRoomInfo,
         });
-        console.log("insertGameRoom #2");
 
         if (!insertResult.data?.result) throw new Error(insertResult.data);
 
-        console.log("insertGameRoom #3", insertResult.data);
         return resultOk(<GameRoom>insertResult.data.datas);
     } catch (e) {
-        console.log("新增房間發生錯誤 ");
-        console.log(e);
+        console.log("新增房間發生錯誤 ", e);
     }
 
     return resultError("新增房間發生錯誤", <GameRoom>{});
@@ -90,22 +108,18 @@ export const insertGameRoom = async (
 
 export const joinGameRoom = async (
     roomId: string
-): Promise<Result<boolean>> => {
+): Promise<Result<false | string>> => {
     try {
-        console.log("joinGameRoom #1");
         // eslint-disable-next-line no-shadow
         const joinResult = await firebase
             .functions()
             .httpsCallable("joinGameRoom")({
             roomId,
         });
-        console.log("joinGameRoom #2");
 
         if (!joinResult.data?.result) throw new Error(joinResult.data);
 
-        console.log("joinGameRoom #3", joinResult.data);
-        if (joinResult.data.datas === true) return resultOk(true);
-        console.log("加入房間發生錯誤 #1 ", joinResult.data);
+        return joinResult.data;
     } catch (e) {
         console.log("加入房間發生錯誤 #2", e);
     }
@@ -117,23 +131,62 @@ export const leaveGameRoom = async (
     roomId: string
 ): Promise<Result<boolean>> => {
     try {
-        console.log("leaveGameRoom #1");
         // eslint-disable-next-line no-shadow
         const leaveResult = await firebase
             .functions()
             .httpsCallable("leaveGameRoom")({
             roomId,
         });
-        console.log("leaveGameRoom #2");
 
         if (!leaveResult.data?.result) throw new Error(leaveResult.data);
-
-        console.log("leaveGameRoom #3", leaveResult.data);
-        if (leaveResult.data.datas === true) return resultOk(true);
-        console.log("離開房間發生錯誤 #1 ", leaveResult.data);
+        return leaveResult.data;
     } catch (e) {
         console.log("離開房間發生錯誤 #2", e);
     }
 
     return resultError("離開房間發生錯誤", false);
+};
+
+export const gameStart = async (roomId: string): Promise<Result<boolean>> => {
+    try {
+        // eslint-disable-next-line no-shadow
+        const gameStartResult = await firebase
+            .functions()
+            .httpsCallable("gameStart")({
+            roomId,
+        });
+
+        if (!gameStartResult.data?.result)
+            throw new Error(gameStartResult.data);
+
+        return resultOk(gameStartResult.data.datas);
+    } catch (e) {
+        console.log("遊戲開始時 發生錯誤 ", e);
+    }
+
+    return resultError("遊戲開始時 發生錯誤");
+};
+
+export const gameReady = async (
+    roomId: string,
+    choose: string
+): Promise<Result<boolean>> => {
+    try {
+        // eslint-disable-next-line no-shadow
+        const gameReadyResult = await firebase
+            .functions()
+            .httpsCallable("gameReady")({
+            roomId,
+            choose,
+        });
+
+        if (!gameReadyResult.data?.result)
+            throw new Error(gameReadyResult.data);
+
+        return resultOk(gameReadyResult.data.datas);
+    } catch (e) {
+        console.log("遊戲準備時 發生錯誤 ", e);
+    }
+
+    return resultError("遊戲準備時 發生錯誤");
 };

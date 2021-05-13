@@ -22,7 +22,7 @@ export const routes: RouteType[] = [
         routes: null,
     },
     {
-        path: "/GameRoom/:rid",
+        path: "/GameRoom",
         component: lazy(() => import("../components/pages/PageGameRoom")),
         routes: null,
     },

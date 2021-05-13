@@ -8,11 +8,6 @@ const lockBodyScroll = () => {
 const unlockBodyScroll = () => {
     if (document.getElementById("ModalBox")?.children.length === 0)
         document.body.classList.remove("modal-open");
-    // setTimeout(() => {
-    //     console.log("check ")
-    //     if (document.getElementById("ModalBox")?.children.length === 0)
-    //         document.body.classList.remove("modal-open");
-    // }, 500);
 };
 
 interface Props {
@@ -29,20 +24,6 @@ const Modal = ({
     setClose = undefined,
 }: Props): JSX.Element | null => {
     const refModal = useRef(document.getElementById("ModalBox"));
-    // useEffect(() => {
-    //     if (refModal.current === null)
-    //         refModal.current = document.getElementById("ModalBox");
-    //     console.log(`Modal isOpen: ${isOpen}`);
-    //     console.log(`Modal refModal.current: ${refModal.current}`);
-
-    //     if (isOpen) {
-    //         lockBodyScroll();
-    //     } else {
-    //         unlockBodyScroll();
-    //     }
-
-    //     return () => unlockBodyScroll();
-    // }, [isOpen]);
 
     useEffect(() => {
         if (refModal.current === null)

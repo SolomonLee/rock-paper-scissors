@@ -8,9 +8,6 @@ export const useAuthStateChanged = (
     cb: (user: firebase.User | null) => void
 ): void => {
     useEffect(() => {
-        console.log(
-            `addAuthStateChangedCallBack mapKey:${mapKey} ,cbName: ${cb.name}`
-        );
         apiAuth.addAuthStateChangedCallBack(mapKey, (user) => {
             if (user) cb(user);
             else cb(null);

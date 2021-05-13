@@ -1,6 +1,7 @@
 @import "config.scss";
 @import "root.scss";
 @import "modal.scss";
+@import "message.scss";
 @import "icon.scss";
 
 // ===== ELEMENT =====
@@ -32,6 +33,8 @@
         align-items: center;
 
         .info {
+            display: none;
+
             .email {
                 margin-right: 15px;
                 opacity: 0;
@@ -41,6 +44,10 @@
                 .email {
                     opacity: 1;
                 }
+            }
+
+            @include w-md {
+                display: flex;
             }
         }
 
@@ -75,7 +82,127 @@
         }
     }
 }
+
+.radio_item {
+    display: inline-block;
+
+    span {
+        display: inline-block;
+        border: 3px solid #bbb;
+        border-radius: 6px;
+        padding: 4px 10px;
+    }
+
+    input {
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        cursor: pointer;
+
+        &:checked + span {
+            border-color: rgb(75, 192, 7);
+        }
+    }
+
+    & + .radio_item {
+        margin-left: 8px;
+    }
+}
 // ===== ELEMENT : END =====
+
+// ===== BLOCK =====
+[class$="_block"] {
+    margin-bottom: 1.5rem;
+    position: relative;
+
+    > .block_title {
+        padding-top: 14px;
+        padding-bottom: 20px;
+        font-size: 2rem;
+        text-align: center;
+        letter-spacing: 3px;
+    }
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.gaming_block {
+    & > .block_title {
+        & > .functions {
+            text-align: right;
+        }
+    }
+
+    & > .block_content {
+        .gaming_title {
+            display: flex;
+            justify-content: space-between;
+            font-size: 2rem;
+            margin-bottom: 20px;
+
+            .name {
+                flex: 1;
+                text-align: left;
+            }
+
+            & > .functions {
+                text-align: right;
+            }
+        }
+
+        .gaming_room_info {
+            text-align: left;
+            padding: 15px 0;
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+
+            p {
+                margin-bottom: 0.5rem;
+            }
+
+            .roomState {
+                &::before {
+                    content: "";
+                    display: inline-block;
+                    width: 10px;
+                    height: 10px;
+                    background: #000;
+                    border-radius: 30px;
+                    line-height: inherit;
+                    margin-right: 6px;
+                    margin-bottom: 2px;
+                }
+
+                &[data-state="Waiting"]::before {
+                    background: #1ee81b;
+                }
+
+                &[data-state="Start"]::before {
+                    background: #ecde34;
+                }
+
+                &[data-state="End"]::before {
+                    background: #ef1717;
+                }
+            }
+        }
+
+        .gaming_info {
+            display: flex;
+
+            & > * {
+                flex: 1;
+                padding: 0 10px;
+            }
+        }
+    }
+}
+// ===== BLOCK =====
 
 // ===== BOX =====
 [class$="_box"] {
@@ -95,12 +222,70 @@
     }
 }
 
+.gamer_self_box {
+    text-align: left;
+
+    & > .box_mask {
+        & ~ * {
+            display: none;
+        }
+    }
+
+    & > .box_content {
+        > ul {
+            list-style: none;
+            padding: 0;
+        }
+    }
+
+    & > .box_bottom {
+        .functions {
+            .btn {
+                width: 51%;
+                margin-bottom: 8px;
+            }
+        }
+    }
+
+    & > .gamer_result {
+        min-width: 100px;
+        padding: 20px 10px;
+        border-radius: $radius1;
+        color: #fff;
+        font-size: 1rem;
+        text-align: center;
+
+        &[data-result="winner"] {
+            background: #5cda3c;
+        }
+
+        &[data-result="loser"] {
+            background: #3c2727;
+        }
+    }
+}
+
 .game_list_box {
     & > .box_title {
         border-bottom: 1px solid #ccc;
     }
 
     & > .box_content {
+        > .functions {
+            padding-top: 14px;
+            padding-bottom: 14px;
+            display: flex;
+            border-bottom: 1px solid #ccc;
+
+            & > .btn {
+                flex: 1;
+                margin-right: 6px;
+
+                &:last-child {
+                    margin-right: 0;
+                }
+            }
+        }
         .add_game_room {
             padding-top: 14px;
             padding-bottom: 14px;
@@ -124,6 +309,10 @@
         max-height: calc(100vh - 420px);
         overflow: auto;
     }
+
+    & > .loading_item {
+        min-height: 500px;
+    }
 } // game_list_box
 
 .form_box {
@@ -145,14 +334,65 @@
     margin-bottom: var(--margin-bottom);
     position: relative;
 
-    > .box_title {
-        padding-top: 14px;
-        padding-bottom: 20px;
-        font-size: 1.8rem;
-        text-align: center;
-        letter-spacing: 2px;
+    > .item_title {
+        padding-top: 8px;
+        padding-bottom: 14px;
+        font-size: 1.2rem;
+        letter-spacing: 1px;
     }
 }
+
+.gamer_info_item {
+    display: flex;
+    align-items: center;
+    border-radius: $radius1;
+    width: 100%;
+    box-shadow: #0000004d 0px 19px 38px, #00000038 0px 15px 12px;
+
+    & > .item_title {
+        padding: 0;
+
+        .gamer_ready {
+            min-width: 100px;
+            padding: 20px 10px;
+            border-top-left-radius: $radius1;
+            border-bottom-left-radius: $radius1;
+            background: #d04975;
+            color: #fff;
+            font-size: 1rem;
+
+            &[data-ready] {
+                background: #289430;
+            }
+        }
+
+        .gamer_result {
+            min-width: 100px;
+            padding: 20px 10px;
+            border-top-left-radius: $radius1;
+            border-bottom-left-radius: $radius1;
+            color: #fff;
+            font-size: 1rem;
+
+            &[data-result="winner"] {
+                background: #5cda3c;
+            }
+            &[data-result="loser"] {
+                background: #3c2727;
+            }
+        }
+    }
+
+    & > .item_content {
+        padding: 0 10px;
+        width: 100px;
+        flex: 1;
+
+        p {
+            margin: 0;
+        }
+    }
+} // gamer_info_item
 
 .room_list_item {
     border: 1px solid #ccc;
@@ -247,7 +487,7 @@
     text-align: center;
     background: #fff7f7;
     position: absolute;
-    z-index: 0;
+    z-index: 1;
     left: 0;
     top: 0;
     bottom: 0;

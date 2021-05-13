@@ -2,16 +2,19 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import * as apiAuth from "../apis/auth";
 import * as apiGamer from "../apis/gamer";
 import * as apiGameRooms from "../apis/gameRooms";
-import { resultError, resultOk } from "../apis/result";
+import { Result, resultError, resultOk } from "../apis/result";
+import addMessage from "../components/combo/message/Message";
 import { RootState } from "./store";
 
 interface GamerState extends apiGamer.Gamer {
     inSignIn: boolean;
     signInErrorMsg: string;
+    onChangeJoinRoom: boolean;
 }
 
 const initialState = <GamerState>{
     inSignIn: false,
+    onChangeJoinRoom: false,
     email: "",
     gamerName: "",
     joinGameRoomId: "",
@@ -28,7 +31,6 @@ export const signInAsync = createAsyncThunk(
     async ({ email, password }: User) => {
         const resultSignIn = await apiAuth.signIn(email, password);
 
-        console.log(`signInAsync email:${email}, password:${password}`);
         if (resultSignIn.result) {
             const resultGetGamerInfo = await apiGamer.getGamerInfo();
 
@@ -37,7 +39,7 @@ export const signInAsync = createAsyncThunk(
 
         return resultError("登入失敗", <apiGamer.Gamer>{});
     }
-);
+); // signInAsync()
 
 export const registerAsync = createAsyncThunk(
     "gamerRedux/registerAsync",
@@ -53,32 +55,31 @@ export const registerAsync = createAsyncThunk(
             return resultError("註冊失敗", <apiGamer.Gamer>{});
         }
     }
-);
+); // registerAsync()
 
 export const getGamerInfoAsync = createAsyncThunk(
     "gamerRedux/getGamerInfoAsync",
     async (setErrorMsg: boolean) => {
-        console.log(`getGamerInfoAsync IN!`);
         const resultGetGamerInfo = await apiGamer.getGamerInfo();
 
         if (resultGetGamerInfo.result) {
             return resultGetGamerInfo;
-            console.log(
-                "getGamerInfoAsync resultGetGamerInfo",
-                resultGetGamerInfo
-            );
-            return resultGetGamerInfo;
         }
+
         if (setErrorMsg)
             return resultError("取得玩家資訊失敗", <apiGamer.Gamer>{});
         return resultError("", <apiGamer.Gamer>{});
     }
-);
+); // getGamerInfoAsync()
 
 export const joinGameRoomAsync = createAsyncThunk(
     "gamerRedux/joinGameRoomAsync",
-    async (gameRoomId: string, { getState }) => {
-        const { email, joinGameRoomId } = getState() as GamerState;
+    async (
+        gameRoomId: string,
+        { getState }
+    ): Promise<Result<string | false>> => {
+        const store = getState() as RootState;
+        const { email, joinGameRoomId } = store.gamer;
 
         if (email === "") {
             return resultError("需要登入才能加入房間!!", false);
@@ -88,19 +89,20 @@ export const joinGameRoomAsync = createAsyncThunk(
             return resultError("不行同時加入兩間房間!!", false);
         }
 
-        if (gameRoomId.length !== 0) {
+        if (gameRoomId.length === 0) {
             return resultError("請確認房間ID!!", false);
         }
 
         const reulst = await apiGameRooms.joinGameRoom(gameRoomId);
         return reulst;
     }
-);
+); // joinGameRoomAsync()
 
 export const leaveGameRoomAsync = createAsyncThunk(
     "gamerRedux/leaveGameRoomAsync",
-    async (gameRoomId: string, { getState }) => {
-        const { email, joinGameRoomId } = getState() as GamerState;
+    async (gameRoomId: string, { getState }): Promise<Result<boolean>> => {
+        const store = getState() as RootState;
+        const { email, joinGameRoomId } = store.gamer;
 
         if (email === "") {
             return resultError("需要登入才能離開房間!!", false);
@@ -117,7 +119,7 @@ export const leaveGameRoomAsync = createAsyncThunk(
         const reulst = await apiGameRooms.leaveGameRoom(gameRoomId);
         return reulst;
     }
-);
+); // leaveGameRoomAsync()
 
 export const gamerSlice = createSlice({
     name: "gamer",
@@ -134,37 +136,29 @@ export const gamerSlice = createSlice({
     extraReducers: (builder) => {
         // signInAsync : START
         builder.addCase(signInAsync.pending, (state) => {
-            console.log("signInAsync pending!!!", state);
             state.inSignIn = true;
             state.signInErrorMsg = "";
         });
         builder.addCase(signInAsync.fulfilled, (state, action) => {
-            console.log("signInAsync fulfilled!!!", state, action);
             state.inSignIn = false;
 
-            console.log(
-                "signInAsync fulfilled action.payload.result",
-                action.payload.result
-            );
             if (action.payload.result) {
                 const gamer = action.payload.datas;
-                console.log("signInAsync fulfilled gamer", gamer);
+
                 state.email = gamer.email;
                 state.gamerName = gamer.gamerName;
                 state.joinGameRoomId = gamer.joinGameRoomId;
                 state.signInErrorMsg = "";
+                addMessage("登入成功!", "Ok");
             } else {
-                console.log(
-                    "signInAsync fulfilled action.payload.result false"
-                );
                 state.email = "";
                 state.gamerName = "";
                 state.joinGameRoomId = "";
                 state.signInErrorMsg = action.payload.resultMsg;
+                addMessage("登入發生些意外", "Fail");
             }
         });
         builder.addCase(signInAsync.rejected, (state) => {
-            console.log("signInAsync rejected!!!", state);
             state.inSignIn = false;
             state.email = "";
             state.gamerName = "";
@@ -187,11 +181,13 @@ export const gamerSlice = createSlice({
                 state.gamerName = gamer.gamerName;
                 state.joinGameRoomId = gamer.joinGameRoomId;
                 state.signInErrorMsg = "";
+                addMessage("註冊成功!", "Ok");
             } else {
                 state.email = "";
                 state.gamerName = "";
                 state.joinGameRoomId = "";
                 state.signInErrorMsg = action.payload.resultMsg;
+                addMessage("似乎註冊失敗 嘗試登入不行在註冊看看!", "Fail");
             }
         });
 
@@ -212,20 +208,19 @@ export const gamerSlice = createSlice({
         builder.addCase(getGamerInfoAsync.fulfilled, (state, action) => {
             state.inSignIn = false;
 
-            console.log("getGamerInfoAsync fulfilled!!", action.payload);
             if (action.payload.result) {
                 const gamer = action.payload.datas;
-                console.log("getGamerInfoAsync fulfilled!! gamer", gamer);
                 state.email = gamer.email;
                 state.gamerName = gamer.gamerName;
                 state.joinGameRoomId = gamer.joinGameRoomId;
                 state.signInErrorMsg = "";
-            } else {
+                addMessage("更新玩家資訊成功", "Ok");
+            } /* else {
                 state.email = "";
                 state.gamerName = "";
                 state.joinGameRoomId = "";
                 state.signInErrorMsg = action.payload.resultMsg;
-            }
+            } */
         });
 
         builder.addCase(getGamerInfoAsync.rejected, (state) => {
@@ -236,6 +231,47 @@ export const gamerSlice = createSlice({
             state.signInErrorMsg = "取得玩家資訊時出現未知的錯誤";
         });
         // getGamerInfoAsync : END
+
+        // joinGameRoomAsync : START
+        builder.addCase(joinGameRoomAsync.pending, (state) => {
+            state.onChangeJoinRoom = true;
+        });
+        builder.addCase(joinGameRoomAsync.fulfilled, (state, action) => {
+            state.onChangeJoinRoom = false;
+
+            if (action.payload.datas !== false) {
+                state.joinGameRoomId = action.payload.datas;
+                if (action.payload.datas !== "")
+                    addMessage("成功加入房間!", "Ok");
+            } else {
+                addMessage("加入房間失敗!", "Fail");
+            }
+        });
+
+        builder.addCase(joinGameRoomAsync.rejected, (state) => {
+            state.onChangeJoinRoom = false;
+        });
+        // joinGameRoomAsync : END
+
+        // leaveGameRoomAsync : START
+        builder.addCase(leaveGameRoomAsync.pending, (state) => {
+            state.onChangeJoinRoom = true;
+        });
+        builder.addCase(leaveGameRoomAsync.fulfilled, (state, action) => {
+            state.onChangeJoinRoom = false;
+
+            if (action.payload.datas !== false) {
+                state.joinGameRoomId = "";
+                addMessage(`離開房間成功`, "Ok");
+            } else {
+                addMessage(`離開房間失敗 ${action.payload.resultMsg}`, "Fail");
+            }
+        });
+
+        builder.addCase(leaveGameRoomAsync.rejected, (state) => {
+            state.onChangeJoinRoom = false;
+        });
+        // leaveGameRoomAsync : END
     },
 });
 
@@ -250,5 +286,7 @@ export const selectGamerInSignIn = (state: RootState): boolean =>
     state.gamer.inSignIn;
 export const selectGamerSignInErrorMsg = (state: RootState): string =>
     state.gamer.signInErrorMsg;
+export const selectOnChangeJoinRoom = (state: RootState): boolean =>
+    state.gamer.onChangeJoinRoom;
 
 export default gamerSlice.reducer;

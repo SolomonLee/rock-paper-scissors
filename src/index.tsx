@@ -13,7 +13,6 @@ import "firebase/analytics";
 import store from "./reducers/store";
 import firebaseConfig from "./firebaseConfig";
 
-console.log("init");
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 
