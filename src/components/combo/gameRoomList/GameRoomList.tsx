@@ -71,7 +71,7 @@ const GameRoomList = (): JSX.Element => {
                             type="button"
                             onClick={handleUpdateData}
                         >
-                            重新載入
+                            更新列表
                         </button>
                         {gamerEmail !== "" ? (
                             <>

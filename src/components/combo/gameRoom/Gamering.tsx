@@ -154,9 +154,11 @@ const Gamering = (): JSX.Element | null => {
             if (refUpdateDataTimer.current !== null)
                 clearTimeout(refUpdateDataTimer.current);
 
-            refUpdateDataTimer.current = setTimeout(() => {
-                dispatch(updateDataAsync());
-            }, 2000);
+            if (gameRooms.length === 0) {
+                refUpdateDataTimer.current = setTimeout(() => {
+                    dispatch(updateDataAsync());
+                }, 2000);
+            }
         }
     }, [gameRooms, gamerJoinGameRoomId]);
 

@@ -511,6 +511,7 @@
 
     & + * {
         display: none;
+        opacity: 0;
     }
 
     > .item_content {
