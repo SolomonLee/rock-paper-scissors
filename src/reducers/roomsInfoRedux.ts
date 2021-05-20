@@ -203,6 +203,8 @@ export const selectOnReadyOrStart = (state: RootState): boolean =>
     state.roomsInfo.onReadyOrStart;
 export const selectGameRooms = (state: RootState): apiGameRooms.GameRoom[] =>
     state.roomsInfo.resultGameRooms;
+export const selectGameRoomsAll = (state: RootState): apiGameRooms.GameRoom[] =>
+    state.roomsInfo.gameRooms;
 export const selectGameConditions = (
     state: RootState
 ): apiGemeConditions.GameCondition[] => state.roomsInfo.gameConditions;

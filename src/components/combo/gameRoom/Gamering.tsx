@@ -16,7 +16,7 @@ import {
 } from "../../../reducers/gamerRedux";
 
 import {
-    selectGameRooms,
+    selectGameRoomsAll,
     selectGameConditions,
     updateDataAsync,
 } from "../../../reducers/roomsInfoRedux";
@@ -35,12 +35,25 @@ const roomStateNameMap = new Map([
     ["End", "已結束"],
 ]);
 
+function setAndClearRefTimer(
+    refTimer: React.MutableRefObject<number | undefined>,
+    cd: () => void,
+    msec = 2000
+) {
+    // eslint-disable-next-line no-param-reassign
+    refTimer.current = window.setTimeout(() => {
+        cd();
+        // eslint-disable-next-line no-param-reassign
+        refTimer.current = undefined;
+    }, msec);
+}
+
 const Gamering = (): JSX.Element | null => {
     const dispatch = useDispatch();
     const gamerEmail = useSelector(selectGamerEmail);
     const gamerJoinGameRoomId = useSelector(selectGamerJoinGameRoomId);
     const gameConditions = useSelector(selectGameConditions);
-    const gameRooms = useSelector(selectGameRooms);
+    const gameRooms = useSelector(selectGameRoomsAll);
     const onChangeJoinRoom = useSelector(selectOnChangeJoinRoom);
 
     const [roomGamer, setRoomGamer] = useState<RoomGamer | null>(null);
@@ -59,7 +72,8 @@ const Gamering = (): JSX.Element | null => {
     const refSubscribe2 = useRef<null | (() => void)>(null);
     const refIsMount = useRef(false);
 
-    const refUpdateDataTimer = useRef<NodeJS.Timeout | null>(null);
+    const refUpdateDataTimer = useRef<number | undefined>();
+    const refUpdateUserInfoTimer = useRef<number | undefined>();
 
     const autoSubscribe = () => {
         if (gamerJoinGameRoomId !== "") {
@@ -128,6 +142,8 @@ const Gamering = (): JSX.Element | null => {
 
     useEffect(() => {
         refIsMount.current = true;
+        refUpdateDataTimer.current = undefined;
+        refUpdateUserInfoTimer.current = undefined;
         autoSubscribe();
 
         return () => {
@@ -150,16 +166,17 @@ const Gamering = (): JSX.Element | null => {
 
         if (typeof tempGameRoom !== "undefined") {
             setRoomInfo(tempGameRoom);
-        } else {
-            if (refUpdateDataTimer.current !== null)
-                clearTimeout(refUpdateDataTimer.current);
+        } else if (typeof refUpdateDataTimer.current !== "number") {
+            // 針對避免陷入無限 Reload 保險
 
-            if (gameRooms.length === 0) {
-                refUpdateDataTimer.current = setTimeout(() => {
-                    dispatch(updateDataAsync());
-                }, 2000);
-            }
+            setAndClearRefTimer(refUpdateDataTimer, () => {
+                dispatch(updateDataAsync());
+            });
         }
+
+        return () => {
+            clearTimeout(refUpdateDataTimer.current);
+        };
     }, [gameRooms, gamerJoinGameRoomId]);
 
     useEffect(() => {

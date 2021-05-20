@@ -5,9 +5,14 @@
     z-index: 1;
     right: 2vw;
     bottom: 3vh;
+    opacity: 0.5;
     /* display: flex; */
     /* flex-direction: column; */
     /* align-items: stretch;*/
+
+    &:hover {
+        opacity: 1;
+    }
 
     .message_item {
         display: flex;
