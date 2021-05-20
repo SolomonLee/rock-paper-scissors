@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import * as apiAuth from "../apis/auth";
 import * as apiGamer from "../apis/gamer";
 import * as apiGameRooms from "../apis/gameRooms";
-import { Result, resultError, resultOk } from "../apis/result";
+import { Result, resultError /* , resultOk */ } from "../apis/result";
 import addMessage from "../components/combo/message/Message";
 import { RootState } from "./store";
 
@@ -33,7 +33,6 @@ export const signInAsync = createAsyncThunk(
 
         if (resultSignIn.result) {
             const resultGetGamerInfo = await apiGamer.getGamerInfo();
-
             return resultGetGamerInfo;
         }
 
@@ -45,15 +44,13 @@ export const registerAsync = createAsyncThunk(
     "gamerRedux/registerAsync",
     async ({ email, password }: User) => {
         try {
-            await apiAuth.register(email, password);
-            return resultOk(<apiGamer.Gamer>{
-                email,
-                gamerName: email.slice(0, email.indexOf("@")),
-                joinGameRoomId: "",
-            });
+            const resultRegister = await apiAuth.register(email, password);
+            return resultRegister;
         } catch (error) {
-            return resultError("註冊失敗", <apiGamer.Gamer>{});
+            console.log("註冊失敗", error);
         }
+
+        return resultError("註冊失敗");
     }
 ); // registerAsync()
 
@@ -131,13 +128,17 @@ export const gamerSlice = createSlice({
             state.gamerName = "";
             state.joinGameRoomId = "";
             state.signInErrorMsg = "";
+            addMessage("登出成功!", "Ok");
         },
     },
     extraReducers: (builder) => {
         // signInAsync : START
         builder.addCase(signInAsync.pending, (state) => {
-            state.inSignIn = true;
+            state.email = "";
+            state.gamerName = "";
+            state.joinGameRoomId = "";
             state.signInErrorMsg = "";
+            state.inSignIn = true;
         });
         builder.addCase(signInAsync.fulfilled, (state, action) => {
             state.inSignIn = false;
@@ -151,18 +152,11 @@ export const gamerSlice = createSlice({
                 state.signInErrorMsg = "";
                 addMessage("登入成功!", "Ok");
             } else {
-                state.email = "";
-                state.gamerName = "";
-                state.joinGameRoomId = "";
                 state.signInErrorMsg = action.payload.resultMsg;
-                addMessage("登入發生些意外", "Fail");
             }
         });
         builder.addCase(signInAsync.rejected, (state) => {
             state.inSignIn = false;
-            state.email = "";
-            state.gamerName = "";
-            state.joinGameRoomId = "";
             state.signInErrorMsg = "登入時出現未知的錯誤";
         });
         // signInAsync : END
@@ -173,21 +167,12 @@ export const gamerSlice = createSlice({
             state.signInErrorMsg = "";
         });
         builder.addCase(registerAsync.fulfilled, (state, action) => {
-            state.inSignIn = false;
-
             if (action.payload.result) {
-                const gamer = action.payload.datas;
-                state.email = gamer.email;
-                state.gamerName = gamer.gamerName;
-                state.joinGameRoomId = gamer.joinGameRoomId;
                 state.signInErrorMsg = "";
                 addMessage("註冊成功!", "Ok");
             } else {
-                state.email = "";
-                state.gamerName = "";
-                state.joinGameRoomId = "";
+                state.inSignIn = false;
                 state.signInErrorMsg = action.payload.resultMsg;
-                addMessage("似乎註冊失敗 嘗試登入不行在註冊看看!", "Fail");
             }
         });
 

@@ -24,7 +24,9 @@ const User = (): JSX.Element => {
 
     const [isOpenSing, setIsOpenSing] = useState(false);
     useAuthStateChanged("autoGetGamerInfo", (user) => {
-        if (user) dispatch(getGamerInfoAsync(false));
+        if (user) {
+            dispatch(getGamerInfoAsync(false));
+        }
     });
 
     useEffect(() => {
@@ -40,7 +42,6 @@ const User = (): JSX.Element => {
 
     const handleShowSignInModal = (e: MouseEvent<HTMLButtonElement>): void => {
         e.preventDefault();
-        dispatch(signOut());
         setIsOpenSing(true);
     };
 

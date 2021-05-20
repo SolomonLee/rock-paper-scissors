@@ -2,13 +2,10 @@ import firebase from "firebase/app";
 import { resultError, resultOk, Result } from "./result";
 import "firebase/auth";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface AuthResult {}
-
 export const signIn = async (
     email: string,
     password: string
-): Promise<Result<AuthResult>> => {
+): Promise<Result<unknown>> => {
     try {
         const result = await firebase
             .auth()
@@ -21,13 +18,13 @@ export const signIn = async (
     return resultError("登入失敗");
 };
 
-export const signOut = async (): Promise<Result<AuthResult>> => {
+export const signOut = async (): Promise<Result<unknown>> => {
     try {
         await firebase.auth().signOut();
 
         return resultOk();
     } catch (e) {
-        console.log(`signIn error!! ${e}`);
+        console.log(`signOut error!! ${e}`);
     }
 
     return resultError("登入失敗");
@@ -46,12 +43,23 @@ setTimeout(() => {
 export const register = async (
     email: string,
     password: string
-): Promise<Result<AuthResult>> => {
+): Promise<Result<unknown | string>> => {
     try {
-        await firebase.auth().createUserWithEmailAndPassword(email, password);
-        setTimeout(() => signIn(email, password), 2000);
+        const resultRegister = await firebase
+            .auth()
+            .createUserWithEmailAndPassword(email, password)
+            .then(() => resultOk("", "註冊成功"))
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                if (errorCode === "auth/weak-password") {
+                    return resultError("密碼太簡單了!");
+                }
 
-        return resultOk({});
+                return resultError(errorMessage);
+            });
+
+        return resultRegister;
     } catch (e) {
         console.log(`register error!! ${e}`);
     }
